@@ -10,7 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      // relasi pelanggaran -> detail_pelanggaran_siswa (parent -> child)
+      // key: id_pelanggaran
+      // parent: pelanggaran, child: detail_pelanggaran_siswa
+      // tipe: 1 pelanggaran tercatat sebanyak beberapa kali di detail_pelanggaran_siswa (one to many)
+      this.hasMany(models.detail_pelanggaran_siswa, {
+        foreignKey: "id_pelanggaran",
+        as: "detail_pelanggaran_siswa"
+      })
     }
   }
   pelanggaran.init({
