@@ -13,10 +13,13 @@ let uploadImage = require("../middlewares/uploadImage")
 
 // endpoint get data siswa
 app.get("/", [
-    testMiddleware.middleware1, testMiddleware.middleware2,
+    
     authorization.authorization
 ],
     siswaController.getDataSiswa)
+
+// endpoint find siswa
+app.post("/find", [authorization.authorization], siswaController.findSiswa)
 
 // endpoint add data siswa
 app.post("/", [

@@ -16,6 +16,29 @@ exports.getDataSiswa = (request, response) => {
         })
 }
 
+exports.findSiswa = async (request, response) => {
+    let keyword = request.body.keyword
+
+    let sequelize = require(`sequelize`)
+    let Op = sequelize.Op
+
+    /** query = select * from siswa where nama like "%keyword%" or
+     * kelas like "%keyword%" or nis like "%keyword%"
+     * 
+     */
+    let dataSiswa = await modelSiswa.findAll({
+        where: {
+            [Op.or]: {
+                nama: { [Op.like]: `%${keyword}%` },
+                kelas: { [Op.like]: `%${keyword}%` },
+                nis: { [Op.like]: `%${keyword}%` }
+            }
+        }
+    })
+
+    return response.json(dataSiswa)
+}
+
 exports.addDataSiswa = (request, response) => {
     if (!request.file) {
         return response.json({

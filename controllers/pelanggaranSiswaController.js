@@ -1,5 +1,7 @@
 let pelanggaranSiswaModel = require("../models/index").pelanggaran_siswa
 let detailPelanggaranSiswaModel = require("../models/index").detail_pelanggaran_siswa
+let siswaModel = require("../models/index").siswa
+let pelanggaranModel = require("../models/index").pelanggaran
 
 
 exports.getData = async (request, response) => {
@@ -13,7 +15,77 @@ exports.getData = async (request, response) => {
     return response.json(data)
 }
 
-exports.addData = (request, response) => {
+exports.filterPelanggaran = async (request, response) => {
+    /** filter tanggal awal sama tgl akhir */
+    let start = request.body.start // tgl awal
+    let end = request.body.end // tgl akhir
+
+    /** query = select * from pelanggaran_siswa 
+     * where waktu between start and end 
+     * */
+
+    let sequelize = require(`sequelize`)
+    let Op = sequelize.Op
+
+    let data = await pelanggaranSiswaModel.findAll({
+        include: ["siswa", "user", {
+            model: detailPelanggaranSiswaModel,
+            as: "detail_pelanggaran_siswa",
+            include: ["pelanggaran"]
+        }],
+        where: {
+            waktu: { [Op.between]: [start, end] }
+        }
+    })
+    return response.json(data)
+}
+
+exports.eachSiswa = async(request, response) => {
+    let id = request.params.id_siswa
+    let data = await pelanggaranSiswaModel.findAll({
+        include: ["siswa", "user", {
+            model: detailPelanggaranSiswaModel,
+            as: "detail_pelanggaran_siswa",
+            include: ["pelanggaran"]
+        }],
+        where: {
+            id_siswa: id
+        }
+    })
+    return response.json(data)
+}
+
+exports.addData = async (request, response) => {
+
+    // proses pengurangan poin dari siswa yg melanggar
+    // 1. Mengambil poin dari siswa yg bersangkutan
+    let siswa = await siswaModel.findOne({
+        where: { id_siswa: request.body.id_siswa }
+    })
+    let poinSiswa = siswa.poin
+
+    // 2. mengambil nilai poin dari tiap pelanggarannya
+    let detail = request.body.detail_pelanggaran_siswa
+    let jumlahPoinPelanggaran = 0
+    for (let i = 0; i < detail.length; i++) {
+        // ambil poin dari tiap pelanggaran
+        let pelanggaran = await pelanggaranModel.findOne({
+            where: { id_pelanggaran: detail[i].id_pelanggaran }
+        })
+        let poinPelanggaran = pelanggaran.poin
+        jumlahPoinPelanggaran += poinPelanggaran
+    }
+
+    // 3. poin siswa dikurangi jumlah poin pelanggarannya
+    let newPoin = poinSiswa - jumlahPoinPelanggaran
+
+    // 4. update poin siswa
+    await siswaModel.update({ poin: newPoin },
+        {
+            where: { id_siswa: request.body.id_siswa }
+        })
+
+    // proses untuk insert ke tabel pelanggaran siswa dan detailnya
     let newData = {
         waktu: request.body.waktu,
         id_siswa: request.body.id_siswa,

@@ -5,6 +5,22 @@ exports.getPelanggaran = async (request, response) => {
     return response.json(dataPelanggaran)
 }
 
+exports.findPelanggaran = async (request, response) => {
+    let keyword = request.body.keyword
+    let sequelize = require(`sequelize`)
+    let Op = sequelize.Op
+
+    /** query = select * from pelanggaran where
+     * nama_pelanggaran like '%keyword%'
+     */
+    let dataPelanggaran = await modelPelanggaran.findAll({
+        where: {
+            nama_pelanggaran: { [Op.like]: `%${keyword}%` }
+        }
+    })
+    return response.json(dataPelanggaran)
+}
+
 exports.addPelanggaran = (request, response) => {
     let dataPelanggaran = {
         nama_pelanggaran: request.body.nama_pelanggaran,
@@ -34,7 +50,7 @@ exports.updatePelanggaran = (request, response) => {
         poin: request.body.poin,
     }
 
-    modelPelanggaran.update(dataPelanggaran, {where: params})
+    modelPelanggaran.update(dataPelanggaran, { where: params })
         .then(result => {
             return response.json({
                 message: `Data pelanggaran berhasil diubah`
@@ -52,7 +68,7 @@ exports.deletePelanggaran = (request, response) => {
         id_pelanggaran: request.params.id_pelanggaran
     }
 
-    modelPelanggaran.destroy({where: params})
+    modelPelanggaran.destroy({ where: params })
         .then(result => {
             return response.json({
                 message: `Data Pelanggaran berhasil dihapus`

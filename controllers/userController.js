@@ -1,11 +1,31 @@
 let modelUser = require("../models/index").user
 let md5 = require(`md5`)
 let jwt = require(`jsonwebtoken`)
-
 const { validationResult } = require(`express-validator`)
 
 exports.getUser = async (request, response) => {
     let dataUser = await modelUser.findAll()
+    return response.json(dataUser)
+}
+
+exports.findUser = async (request, response) => {
+    let keyword = request.body.keyword
+
+    /** import sequelize operator */
+    let sequelize = require(`sequelize`)
+    let Op = sequelize.Op
+    /**
+     * query = select * from user where username like "%keyword%" or
+     * nama_user like "%keyword%"
+     */
+    let dataUser = await modelUser.findAll({
+        where: {
+            [Op.or]: {
+                username: { [Op.like]: `%${keyword}%` },
+                nama_user: { [Op.like]: `%${keyword}%` }
+            }
+        }
+    })
     return response.json(dataUser)
 }
 
