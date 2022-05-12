@@ -6,6 +6,7 @@ app.use(express.json())
 const userController = require("../controllers/userController")
 
 const userValidator = require("../middlewares/userValidator")
+const userValid = require(`../middlewares/userJoiValidator`)
 const authorization = require("../middlewares/authorization")
 
 app.get("/", [authorization.authorization], userController.getUser)
@@ -13,7 +14,7 @@ app.get("/", [authorization.authorization], userController.getUser)
 app.post("/find",[authorization.authorization], userController.findUser)
 
 app.post("/", [
-    authorization.authorization, userValidator.validate
+    authorization.authorization, userValid.validate
 ], userController.addUser)
 
 app.put("/:id_user", [

@@ -116,7 +116,8 @@ exports.authentication = async (request, response) => {
         let token = jwt.sign(payload, secretKey)
         return response.json({
             logged: true,
-            token: token
+            token: token,
+            dataUser: result
         })
     } else {
         // data tidak ditemukan
